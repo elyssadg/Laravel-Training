@@ -14,7 +14,7 @@ class TransactionController extends Controller
         $transaction = Transaction::where('user_id', $user)->get();
         return view('book.transaction', [
             'transactions' => $transaction,
-            'title' => 'kjhjk'
+            'title' => 'Transactions'
         ]);
     }
 }
