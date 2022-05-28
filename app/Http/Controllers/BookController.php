@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Book;
 use App\Models\BookDetail;
+use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class BookController extends Controller
 {
@@ -157,6 +159,36 @@ class BookController extends Controller
     public function destroy($id)
     {
         Book::destroy($id);
+
+        return redirect(route('home'));
+    }
+
+    public function page_buy($id)
+    {
+        return view('book.purchase', [
+            'book' => Book::findOrFail($id),
+            'title' => 'Purchase Book'
+        ]);
+
+    }
+
+    public function buy($id)
+    {
+        DB::transaction(function () use ($id) {
+            BookDetail::where('book_id', $id)
+            ->update([
+                'stock' => DB::raw('stock - 1'),
+            ]);
+
+            $book = Book::findOrFail($id);
+
+            Transaction::create([
+                'title' => $book->title,
+                'price' => $book->detail->price,
+                'user_id' => Auth::id(),
+                'book_id' => $book->id,
+            ]);
+        });
 
         return redirect(route('home'));
     }
